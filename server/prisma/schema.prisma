@@ -1,0 +1,201 @@
+// World Cup Companion — Prisma schema
+// Run `npx prisma migrate dev --name init` after setting DATABASE_URL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Auth / Users ----------
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  username      String   @unique
+  passwordHash  String
+  favoriteTeam  String?
+  avatarUrl     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  predictions   Prediction[]
+  fantasyTeams  FantasyTeam[]
+  ratings       PlayerRating[]
+  posts         DiscussionPost[]
+  comments      DiscussionComment[]
+  leaderboard   LeaderboardEntry?
+
+  @@map("users")
+}
+
+// ---------- Matches ----------
+
+enum MatchStatus {
+  SCHEDULED
+  LIVE
+  HALFTIME
+  FINISHED
+  POSTPONED
+}
+
+model Team {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  shortName String
+  flagUrl   String?
+  group     String?
+
+  homeMatches Match[] @relation("HomeTeam")
+  awayMatches Match[] @relation("AwayTeam")
+  players     Player[]
+
+  @@map("teams")
+}
+
+model Player {
+  id        String   @id @default(cuid())
+  name      String
+  position  String
+  number    Int?
+  teamId    String
+  team      Team     @relation(fields: [teamId], references: [id])
+
+  ratings   PlayerRating[]
+  fantasyPicks FantasyTeamPlayer[]
+
+  @@map("players")
+}
+
+model Match {
+  id          String      @id @default(cuid())
+  stage       String      // e.g. "Group A", "Round of 16", "Final"
+  kickoffAt   DateTime
+  status      MatchStatus @default(SCHEDULED)
+  homeTeamId  String
+  awayTeamId  String
+  homeTeam    Team        @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeam    Team        @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  homeScore   Int?
+  awayScore   Int?
+  venue       String?
+
+  predictions Prediction[]
+  ratings     PlayerRating[]
+  posts       DiscussionPost[]
+
+  @@map("matches")
+}
+
+// ---------- Predictions ----------
+
+model Prediction {
+  id            String   @id @default(cuid())
+  userId        String
+  matchId       String
+  predHomeScore Int
+  predAwayScore Int
+  pointsAwarded Int?
+  createdAt     DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id])
+  match Match @relation(fields: [matchId], references: [id])
+
+  @@unique([userId, matchId])
+  @@map("predictions")
+}
+
+// ---------- Fantasy Team ----------
+
+model FantasyTeam {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  budget    Int      @default(100)
+  totalPoints Int    @default(0)
+  createdAt DateTime @default(now())
+
+  user    User @relation(fields: [userId], references: [id])
+  players FantasyTeamPlayer[]
+
+  @@map("fantasy_teams")
+}
+
+model FantasyTeamPlayer {
+  id            String @id @default(cuid())
+  fantasyTeamId String
+  playerId      String
+  isCaptain     Boolean @default(false)
+
+  fantasyTeam FantasyTeam @relation(fields: [fantasyTeamId], references: [id])
+  player      Player      @relation(fields: [playerId], references: [id])
+
+  @@unique([fantasyTeamId, playerId])
+  @@map("fantasy_team_players")
+}
+
+// ---------- Player Ratings ----------
+
+model PlayerRating {
+  id        String   @id @default(cuid())
+  userId    String
+  playerId  String
+  matchId   String
+  rating    Float    // 1.0 - 10.0
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id])
+  player Player @relation(fields: [playerId], references: [id])
+  match  Match  @relation(fields: [matchId], references: [id])
+
+  @@unique([userId, playerId, matchId])
+  @@map("player_ratings")
+}
+
+// ---------- Fan Discussions ----------
+
+model DiscussionPost {
+  id        String   @id @default(cuid())
+  userId    String
+  matchId   String?
+  title     String
+  body      String
+  createdAt DateTime @default(now())
+
+  user     User                @relation(fields: [userId], references: [id])
+  match    Match?              @relation(fields: [matchId], references: [id])
+  comments DiscussionComment[]
+
+  @@map("discussion_posts")
+}
+
+model DiscussionComment {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  body      String
+  createdAt DateTime @default(now())
+
+  post DiscussionPost @relation(fields: [postId], references: [id])
+  user User           @relation(fields: [userId], references: [id])
+
+  @@map("discussion_comments")
+}
+
+// ---------- Leaderboard ----------
+
+model LeaderboardEntry {
+  id             String @id @default(cuid())
+  userId         String @unique
+  totalPoints    Int    @default(0)
+  predictionPts  Int    @default(0)
+  fantasyPts     Int    @default(0)
+  rank           Int?
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("leaderboard_entries")
+}
