@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-display: var(--font-rajdhani);
+  --font-body: var(--font-inter);
+  --font-scoreboard: var(--font-jetbrains);
+}
+
+html,
+body {
+  background-color: #0a2e22;
+  color: #f5f2e8;
+}
+
+body {
+  font-family: var(--font-body);
+}
+
+::selection {
+  background-color: #e8b44c;
+  color: #10161a;
+}
+
+/* Tabular numbers everywhere a score or clock appears */
+.scoreboard-num {
+  font-family: var(--font-scoreboard);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
