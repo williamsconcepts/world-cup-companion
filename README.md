@@ -56,7 +56,7 @@ npm run dev                         # http://localhost:3000
 
 Pages: `/` (landing), `/login`, `/register`, and `/dashboard/*` for each module
 (matches, predictions, fantasy, ratings, discussions, leaderboard). The dashboard layout
-guards all of these behind a signed-in session and shows a live scrolling score ticker.
+guards all of these behind a signed-in session and shows a live scrolling score ticker. 
 
 ## 3. Deploying
 
@@ -91,4 +91,4 @@ ticker at the top of the dashboard, styled like a stadium LED board.
   `FantasyTeam.totalPoints`, and `LeaderboardEntry`.
 - Replace the raw match/player ID inputs on the Ratings page with real dropdowns once you're
   ready to wire it fully into the Matches module.
-- Add refresh-token rotation if you want longer-lived sessions than the current JWT expiry.
+- Add refresh-token rotation if you want longer-lived sessions than the current JWT expiry.ok
