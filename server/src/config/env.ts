@@ -13,5 +13,5 @@ export const env = {
   databaseUrl: required("DATABASE_URL"),
   jwtSecret: required("JWT_SECRET"),
   jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? "7d",
-  clientUrl: process.env.CLIENT_URL ?? "http://localhost:3000",
+  clientUrl: process.env.CLIENT_URL ?? "http://localhost:3001",
 };
